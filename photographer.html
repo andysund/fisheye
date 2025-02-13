@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <link href="css/style.css" rel="stylesheet" type="text/css" />
+    <meta charset="utf-8">
+    <link rel="icon" type="image/png" href="assets/favicon.png">
+    <link href="https://fonts.googleapis.com/css?family=DM+Sans&display=swap" rel="stylesheet">
+    <title>Fisheye - photographe </title>
+  </head>
+  <body>
+    <header>
+      <img src="assets/images/logo.png" class="logo" />
+    </header>
+    <main id="main">
+     <div class="photographers-list"></div> 
+    <div class="hero-banner">
+
+      <div class="artist-info"></div>
+    
+      <div class="photograph-header">
+        <button class="contact_button" onclick="displayModal()">Contactez-moi</button>
+      </div>
+      <div class="img-personal-page"></div>
+
+
+      </div>
+      <div class="photograph-gallery">
+        <div class="gallery-header">
+          <div class="sort">
+            <label id="label" for="dropdown">Trier par</label>
+           <div class="dropdown">
+
+  <button class="dropdown-btn">Popularité <img src="/assets/expand_less.png" alt="Icone flèche vers le bas" class="arrow_down"></li></button>
+
+  <ul class="dropdown-menu">
+    <li class="dropdown-option"><a href="#" data-value="popularity">Popularité</a>
+    <img src="/assets/expand_more.png" alt="Icone flèche vers le haut" class="arrow"></li>
+    <hr class="brake-line">
+    <li class="dropdown-option" id="middle-option"><a href="#" data-value="date">Date</a>
+    
+    <hr class="brake-line">
+    <li class="dropdown-option"><a href="#" data-value="title">Titre</a>
+ 
+  </ul>
+
+</div>
+          </div>
+           <div id="gallery"></div>
+        </div>
+       
+    </main>
+    <div id="contact_modal">
+			<div class="modal">
+				<header>
+          <h2>Contactez-moi</h2>
+           <div id="modalNameDiv"></div>
+          <img src="assets/icons/close.svg" onclick="closeModal()" />
+        </header>
+				<form>
+					<div>
+						<label>Prénom</label>
+						<input />
+            <label>Nom</label>
+						<input />
+            <label>Email</label>
+						<input />
+            <label >Votre message</label>
+						<input style="height:178px" />
+                 <button class="contact_button">Envoyer</button>
+          
+					</div>
+					</div>
+					</div>
+       
+					</div>
+        
+				</form>
+			</div>
+		</div>
+    <script src="scripts/pages/photographer.js"></script>
+    <script src="scripts/utils/contactForm.js"></script>
+  </body>
+</html>
