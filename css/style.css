@@ -362,4 +362,15 @@ h1 {
             color: white;
             text-decoration: none;
           }
+          .contact-header {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-bottom: 70px;
+          
+          }
+          .modal-header {
+            display: flex;
+            flex-direction: column;
+          }
           

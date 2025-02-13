@@ -27,26 +27,34 @@
     width: 50%;
     display: flex;
     flex-direction: column;
-    align-items: center;
+    
     justify-content: space-between;
     padding: 35px;
     margin: auto;
     width: 670px;
 }
 
-.modal header {
-    justify-content: space-between;
+.modal-header-global {
     width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: baseline;
+
 }
 
-.modal header img {
+.modal-header-global img {
     cursor: pointer;
 }
+#modalNameDiv{
+    font-size: 64px;
 
-.modal header h2 {
+}
+.modal-header-global h2 {
     font-size: 64px;
     font-weight: normal;
     text-align: center;
+    margin: 0;
 }
 
 form {
@@ -67,6 +75,7 @@ form div {
     width: 100%;
     align-items: self-start;
     margin-bottom: 26px;
+    margin-top: 10px;
 }
 
 form input {
