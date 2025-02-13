@@ -119,7 +119,13 @@ function displayMedia(artistData, photographerKey) {
       presentation.classList.add("presentation");
       const title = document.createElement("p");
       const likes = document.createElement("p");
+      likes.classList.add("likes");
       likes.textContent = mediaInfo.likes + " ❤";
+       // Ajout de l'écouteur d'événements pour incrémenter les likes
+      likes.addEventListener("click", () => {
+      mediaInfo.likes++; // Incrémente le nombre de likes dans l'objet
+      likes.textContent = mediaInfo.likes + " ❤"; // Met à jour l'affichage
+});
       presentation.appendChild(likes);
       title.textContent = img.title;  
       presentation.appendChild(title);
@@ -194,6 +200,7 @@ function displayMedia(artistData, photographerKey) {
 document.addEventListener("DOMContentLoaded", function () {
   const dropdown = document.querySelector(".dropdown");
   const button = document.querySelector(".dropdown-btn");
+  const likes = document.querySelector(".likes");
 
   // Au clic sur le bouton, on active/désactive le dropdown
   button.addEventListener("click", (event) => {
@@ -201,10 +208,13 @@ document.addEventListener("DOMContentLoaded", function () {
     dropdown.classList.toggle("active");
   });
 
+
   // Si on clique ailleurs dans le document, on désactive le dropdown
   document.addEventListener("click", (event) => {
     if (!dropdown.contains(event.target)) {
       dropdown.classList.remove("active");
     }
   });
+
+
 });
