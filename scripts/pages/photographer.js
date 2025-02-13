@@ -1,10 +1,17 @@
-// 1. Récupérer l'ID du photographe depuis l'URL
+// Variable globale qui contiendra les médias du photographe
+let photographerMedia = [];
+
+/* -----------------------
+   1. Fonctions de base
+-------------------------*/
+
+// Récupère l'ID du photographe depuis l'URL
 function getPhotographerIdFromURL() {
   const params = new URLSearchParams(window.location.search);
-  return params.get("id"); // Retourne l'ID sous forme de string
+  return params.get("id");
 }
 
-// 2. Récupérer les photographes depuis le fichier JSON
+// Récupère la liste des photographes depuis le JSON
 async function getPhotographers() {
   try {
     const response = await fetch('assets/photographers/photographers.json');
@@ -16,12 +23,11 @@ async function getPhotographers() {
   }
 }
 
-// 3. Afficher les informations du photographe (détails personnels)
+// Affiche les informations du photographe
 function displayPhotographerInfo(photographer) {
   const photographerInfo = document.querySelector(".artist-info");
   const profilePicture = document.querySelector(".img-personal-page");
   
-  // Construction du chemin de l'image de profil
   const picture = `assets/PhotographersID/${photographer.portrait}`;
   const imgPersonalPage = document.createElement("div");
   const artistResume = document.createElement("div");
@@ -29,11 +35,6 @@ function displayPhotographerInfo(photographer) {
   imgPersonalPage.innerHTML = `<img src="${picture}" alt="${photographer.name}" class="artist-img">`;
   artistResume.classList.add("artist-resume");
 
-  // Création du lien dynamique
-  const artistLink = document.createElement("a");
-  artistLink.href = `/photographer.html?id=${photographer.id}`;
-  artistLink.classList.add("artist-link");
-  
   const nameDiv = document.createElement("div");
   const artistName = document.createElement("h1");
   artistName.classList.add("artist-name");
@@ -47,7 +48,6 @@ function displayPhotographerInfo(photographer) {
   artistTagline.classList.add("artist-tagline");
   artistTagline.textContent = photographer.tagline;
   
-  // Ajout des éléments créés aux conteneurs HTML
   artistResume.appendChild(artistLocation);
   artistResume.appendChild(artistTagline);
   nameDiv.appendChild(artistName);
@@ -56,7 +56,7 @@ function displayPhotographerInfo(photographer) {
   profilePicture.appendChild(imgPersonalPage); 
 }
 
-// 4. Récupérer les médias depuis le fichier JSON
+// Récupère les médias depuis le JSON
 async function getArtistWork() {
   try {
     const response = await fetch('./assets/FishEye_Photos (1)/Sample Photos/media.json');
@@ -69,105 +69,131 @@ async function getArtistWork() {
   }
 }
 
-// 5. Afficher uniquement les médias (images et vidéos) du photographe courant
-function displayMedia(artistData, photographerKey) {
+/* -----------------------
+   2. Affichage et tri des médias
+-------------------------*/
+
+/**
+ * Cette fonction extrait les médias (photos et vidéos) pour le photographe courant,
+ * complète chaque objet avec quelques propriétés (type et chemin complet),
+ * et stocke le tout dans le tableau global `photographerMedia`.
+ * Ensuite, elle appelle renderGallery pour afficher les médias.
+ */
+function displayMedia(artistData, photographerKey, photographerId) {
+  // Réinitialisation de la galerie
   const gallery = document.getElementById('gallery');
   gallery.innerHTML = "";
 
-  // On récupère uniquement les médias du photographe (exemple "Mimi")
+  // On récupère les médias spécifiques à ce photographe
   const currentMedia = artistData[photographerKey];
   if (!currentMedia) {
     console.error("Aucun média trouvé pour " + photographerKey);
     return;
   }
   
-  // Chemin de base pour accéder aux médias
   const baseMediaPath = 'assets/FishEye_Photos (1)/Sample Photos/';
-  
-  // Tableau global des médias (contenant tous les objets avec id, title, image/video, etc.)
-  const globalMedia = artistData.media; // On suppose qu'il existe dans votre JSON
+  const globalMedia = artistData.media; // tableau contenant TOUS les médias
 
-  // === Affichage des photos ===
+  // On vide le tableau global pour le photographe
+  photographerMedia = [];
+
+  // --- Traiter les photos ---
   if (currentMedia.photos && Array.isArray(currentMedia.photos)) {
     currentMedia.photos.forEach(photoPath => {
-      // Extraction du nom du fichier (ex : "Mimi\\Event_SeasideWedding.jpg" -> "Event_SeasideWedding.jpg")
       const fileName = photoPath.split(/[\\/]/).pop();
-      
-      // Recherche dans le tableau global de médias l'objet dont la propriété "image" correspond
+      // Recherche l'objet média correspondant dans le tableau global
       const mediaInfo = globalMedia.find(item => item.image === fileName);
-      
-      const photoDiv = document.createElement('div');
-      photoDiv.classList.add('media-item');
-  
-      const img = document.createElement('img');
-      // Correction du chemin : ajout du préfixe et remplacement des antislashs par des slashs
-      img.src = baseMediaPath + photoPath.replace(/\\/g, '/');
-      img.alt = `${photographerKey} photo`;
-      
       if (mediaInfo) {
-        // Ajout des informations du média à l'élément image (on peut utiliser des data-attributes pour un usage ultérieur)
-        img.title = mediaInfo.title;
-        img.dataset.mediaId = mediaInfo.id;
-        img.dataset.photographerId = mediaInfo.photographerId;
-        img.dataset.likes = mediaInfo.likes;
-        img.dataset.date = mediaInfo.date;
-        img.dataset.price = mediaInfo.price;
-      } else {
-        img.title = "Aucune information trouvée";
+        // On ajoute des propriétés utiles pour le rendu
+        mediaInfo.type = "photo";
+        mediaInfo.path = baseMediaPath + photoPath.replace(/\\/g, '/');
+        photographerMedia.push(mediaInfo);
       }
-      const presentation = document.createElement("div");
-      presentation.classList.add("presentation");
-      const title = document.createElement("p");
-      const likes = document.createElement("p");
-      likes.classList.add("likes");
-      likes.textContent = mediaInfo.likes + " ❤";
-       // Ajout de l'écouteur d'événements pour incrémenter les likes
-      likes.addEventListener("click", () => {
-      mediaInfo.likes++; // Incrémente le nombre de likes dans l'objet
-      likes.textContent = mediaInfo.likes + " ❤"; // Met à jour l'affichage
-});
-      presentation.appendChild(likes);
-      title.textContent = img.title;  
-      presentation.appendChild(title);
-      photoDiv.appendChild(presentation);
-      photoDiv.appendChild(img);
-      gallery.appendChild(photoDiv);
     });
   }
   
-  // === Affichage des vidéos ===
+  // --- Traiter les vidéos ---
   if (currentMedia.videos && Array.isArray(currentMedia.videos)) {
     currentMedia.videos.forEach(videoPath => {
       const fileName = videoPath.split(/[\\/]/).pop();
-      
-      // Recherche dans le tableau global de médias l'objet dont la propriété "video" correspond
       const mediaInfo = globalMedia.find(item => item.video === fileName);
-      
-      const videoDiv = document.createElement('div');
-      videoDiv.classList.add('media-item');
-  
-      const video = document.createElement('video');
-      video.src = baseMediaPath + videoPath.replace(/\\/g, '/');
-      video.controls = true;
-      
       if (mediaInfo) {
-        video.title = mediaInfo.title;
-        video.dataset.mediaId = mediaInfo.id;
-        video.dataset.photographerId = mediaInfo.photographerId;
-        video.dataset.likes = mediaInfo.likes;
-        video.dataset.date = mediaInfo.date;
-        video.dataset.price = mediaInfo.price;
-      } else {
-        video.title = "Aucune information trouvée";
+        mediaInfo.type = "video";
+        mediaInfo.path = baseMediaPath + videoPath.replace(/\\/g, '/');
+        photographerMedia.push(mediaInfo);
       }
-      
-      videoDiv.appendChild(video);
-      gallery.appendChild(videoDiv);
     });
   }
+  
+  // Tri par défaut (ici par popularité décroissante)
+  photographerMedia.sort((a, b) => b.likes - a.likes);
+  
+  // Affichage de la galerie avec les médias triés
+  renderGallery(photographerMedia);
 }
 
-// 6. Fonction d'initialisation : on récupère les infos du photographe et ses médias
+/**
+ * Cette fonction reçoit un tableau de médias et affiche chacun dans la galerie.
+ * Pour chaque média, on crée une div contenant la zone de présentation (likes et titre)
+ * et l’élément média (img ou video).
+ */
+function renderGallery(mediaArray) {
+  const gallery = document.getElementById('gallery');
+  gallery.innerHTML = "";
+  
+  mediaArray.forEach(mediaInfo => {
+    const mediaItemDiv = document.createElement("div");
+    mediaItemDiv.classList.add("media-item");
+    
+    let mediaElement;
+    if (mediaInfo.type === "photo") {
+      mediaElement = document.createElement("img");
+      mediaElement.src = mediaInfo.path;
+      mediaElement.alt = mediaInfo.title + " photo";
+    } else if (mediaInfo.type === "video") {
+      mediaElement = document.createElement("video");
+      mediaElement.src = mediaInfo.path;
+      mediaElement.controls = true;
+      mediaElement.alt = mediaInfo.title + " video";
+    }
+    
+    // Ajout des informations au média (data-attributes, titre, etc.)
+    mediaElement.title = mediaInfo.title;
+    mediaElement.dataset.mediaId = mediaInfo.id;
+    mediaElement.dataset.photographerId = mediaInfo.photographerId;
+    mediaElement.dataset.likes = mediaInfo.likes;
+    mediaElement.dataset.date = mediaInfo.date;
+    mediaElement.dataset.price = mediaInfo.price;
+    
+    // Zone de présentation (likes et titre)
+    const presentation = document.createElement("div");
+    presentation.classList.add("presentation");
+    
+    const likesElement = document.createElement("p");
+    likesElement.classList.add("likes");
+    likesElement.textContent = mediaInfo.likes + " ❤";
+    // Incrémentation des likes au clic
+    likesElement.addEventListener("click", () => {
+      mediaInfo.likes++;
+      likesElement.textContent = mediaInfo.likes + " ❤";
+    });
+    
+    const titleElement = document.createElement("p");
+    titleElement.textContent = mediaInfo.title;
+    
+    presentation.appendChild(likesElement);
+    presentation.appendChild(titleElement);
+    
+    mediaItemDiv.appendChild(presentation);
+    mediaItemDiv.appendChild(mediaElement);
+    gallery.appendChild(mediaItemDiv);
+  });
+}
+
+/* -----------------------
+   3. Initialisation
+-------------------------*/
+
 (async function init() {
   // Récupération de l'ID dans l'URL
   const photographerId = getPhotographerIdFromURL();
@@ -176,7 +202,7 @@ function displayMedia(artistData, photographerKey) {
     return;
   }
   
-  // Récupération des photographes et identification du photographe courant
+  // Récupération et identification du photographe courant
   const photographers = await getPhotographers();
   const photographer = photographers.find(p => p.id == photographerId);
   if (!photographer) {
@@ -187,34 +213,66 @@ function displayMedia(artistData, photographerKey) {
   // Affichage des informations du photographe
   displayPhotographerInfo(photographer);
   
-  // Récupération du JSON des médias
+  // Récupération des médias
   const artistData = await getArtistWork();
   
-  // Extraction du prénom depuis le nom complet pour correspondre à la clé du JSON des médias
+  // Pour accéder aux médias dans le JSON, on utilise ici le prénom (par exemple "Mimi")
   const photographerKey = photographer.name.split(" ")[0];
   
-  // Affichage des médias du photographe courant (images et vidéos) avec leurs informations associées
-  displayMedia(artistData, photographerKey);
+  // Extraction et affichage des médias
+  displayMedia(artistData, photographerKey, photographerId);
 })();
+
+/* -----------------------
+   4. Gestion du dropdown et du tri
+-------------------------*/
 
 document.addEventListener("DOMContentLoaded", function () {
   const dropdown = document.querySelector(".dropdown");
   const button = document.querySelector(".dropdown-btn");
-  const likes = document.querySelector(".likes");
 
-  // Au clic sur le bouton, on active/désactive le dropdown
+  // Au clic sur le bouton, on affiche/masque le menu
   button.addEventListener("click", (event) => {
-    event.stopPropagation(); // Pour éviter que le document ne masque immédiatement le dropdown
+    event.stopPropagation();
     dropdown.classList.toggle("active");
   });
 
-
-  // Si on clique ailleurs dans le document, on désactive le dropdown
+  // Clic en dehors du dropdown pour le fermer
   document.addEventListener("click", (event) => {
     if (!dropdown.contains(event.target)) {
       dropdown.classList.remove("active");
     }
   });
 
-
+  // Ajout des écouteurs sur chaque option du menu
+  const dropdownLinks = document.querySelectorAll(".dropdown-menu li");
+  dropdownLinks.forEach(link => {
+    link.addEventListener("click", (e) => {
+      e.preventDefault();
+      const sortValue = link.dataset.value;
+      console.log("Tri par :", sortValue);
+      console.log("contenu link :", link.dataset.textContent);
+      let sortedMedia = [];
+      
+      if (sortValue === "popularity") {
+        // Tri par nombre de likes décroissant
+        sortedMedia = photographerMedia.slice().sort((a, b) => b.likes - a.likes);
+      } else if (sortValue === "date") {
+        // Tri par date croissante (vous pouvez inverser le sens si besoin)
+        sortedMedia = photographerMedia.slice().sort((a, b) => new Date(a.date) - new Date(b.date));
+      } else if (sortValue === "title") {
+        // Tri alphabétique sur le titre
+        sortedMedia = photographerMedia.slice().sort((a, b) => a.title.localeCompare(b.title));
+      }
+      
+      // Réaffichage de la galerie avec les médias triés
+      renderGallery(sortedMedia);
+      
+      // Mise à jour du libellé du bouton du dropdown (optionnel)
+      button.innerHTML = link.textContent + ' <img src="/assets/expand_less.png" alt="Icone flèche vers le bas" class="arrow_down">';
+      
+      // Fermeture du menu
+      dropdown.classList.remove("active");
+    });
+  });
 });
